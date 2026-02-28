@@ -579,14 +579,40 @@ const Footer = () => {
 
 const QuoteModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitted(true);
-    setTimeout(() => {
-      setIsSubmitted(false);
-      onClose();
-    }, 4000);
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    formData.append("access_key", "83c9b4e0-d35e-4d97-b8ce-2b1750785ace");
+    formData.append("subject", "Nouvelle demande de devis - PNS Nettoyage");
+    formData.append("from_name", "Site Web PNS Nettoyage");
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsSubmitted(true);
+        setTimeout(() => {
+          setIsSubmitted(false);
+          onClose();
+        }, 5000);
+      } else {
+        alert("Une erreur est survenue lors de l'envoi. Veuillez réessayer ou nous contacter par téléphone.");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Une erreur de connexion est survenue. Veuillez vérifier votre connexion internet.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -628,7 +654,7 @@ const QuoteModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                   </div>
                   <h4 className="text-2xl font-bold text-slate-900 mb-2">Demande envoyée !</h4>
                   <p className="text-slate-600 max-w-md">
-                    Merci pour votre demande. Vos informations ont été envoyées à <span className="font-semibold text-lime-600">pnsmaroc@gmail.com</span>. Notre équipe vous contactera très prochainement.
+                    Merci pour votre demande. Vos informations ont été envoyées avec succès. Notre équipe vous contactera très prochainement.
                   </p>
                 </motion.div>
               ) : (
@@ -636,22 +662,22 @@ const QuoteModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-slate-700">Nom complet *</label>
-                      <input required type="text" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 outline-none transition-all" placeholder="Votre nom" />
+                      <input required name="name" type="text" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 outline-none transition-all" placeholder="Votre nom" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-slate-700">Téléphone *</label>
-                      <input required type="tel" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 outline-none transition-all" placeholder="+212 6XX XX XX XX" />
+                      <input required name="phone" type="tel" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 outline-none transition-all" placeholder="+212 6XX XX XX XX" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-slate-700">Email *</label>
-                      <input required type="email" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 outline-none transition-all" placeholder="votre@email.com" />
+                      <input required name="email" type="email" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 outline-none transition-all" placeholder="votre@email.com" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-slate-700">Type de service *</label>
-                      <select required className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 outline-none transition-all bg-white">
+                      <select required name="service_type" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 outline-none transition-all bg-white">
                         <option value="">Sélectionnez un service</option>
                         <option value="bureau">Nettoyage Bureau</option>
                         <option value="maison">Nettoyage Maison</option>
@@ -666,22 +692,35 @@ const QuoteModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-slate-700">Superficie estimée (m²) *</label>
-                      <input required type="number" min="1" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 outline-none transition-all" placeholder="Ex: 100" />
+                      <input required name="area" type="number" min="1" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 outline-none transition-all" placeholder="Ex: 100" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-slate-700">Date souhaitée</label>
-                      <input type="date" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 outline-none transition-all" />
+                      <input name="date" type="date" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 outline-none transition-all" />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700">Détails supplémentaires</label>
-                    <textarea rows={4} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 outline-none transition-all resize-none" placeholder="Décrivez vos besoins spécifiques..."></textarea>
+                    <textarea name="message" rows={4} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 outline-none transition-all resize-none" placeholder="Décrivez vos besoins spécifiques..."></textarea>
                   </div>
 
-                  <button type="submit" className="w-full bg-lime-500 text-slate-900 py-4 rounded-xl font-bold text-lg hover:bg-lime-400 transition-colors shadow-lg shadow-lime-200 flex items-center justify-center gap-2">
-                    Envoyer la demande
-                    <ArrowRight className="w-5 h-5" />
+                  <button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className="w-full bg-lime-500 text-slate-900 py-4 rounded-xl font-bold text-lg hover:bg-lime-400 transition-colors shadow-lg shadow-lime-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+                        Envoi en cours...
+                      </>
+                    ) : (
+                      <>
+                        Envoyer la demande
+                        <ArrowRight className="w-5 h-5" />
+                      </>
+                    )}
                   </button>
                 </form>
               )}
